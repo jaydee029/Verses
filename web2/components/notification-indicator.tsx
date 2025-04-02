@@ -37,8 +37,15 @@ export function NotificationIndicator({ className = "" }: NotificationIndicatorP
         })
 
         if (response.ok) {
-          const data = await response.json()
+          const text = await response.text()
+          const data = JSON.parse(text)
+          if (data!=null){
           setHasUnread(data.some((notification: any) => !notification.read))
+          } else {
+            setHasUnread(false)
+            console.log("EMPTY")
+            console.log(data)
+          }
         }
       } catch (err) {
         console.error("Failed to check unread notifications", err)

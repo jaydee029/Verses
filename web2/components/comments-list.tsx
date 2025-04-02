@@ -37,6 +37,8 @@ export function CommentsList({ proseId }: { proseId: string }) {
   const { data, error: sseError } = useSSE<Comment[]>(`/api/${proseId}/comments`, token, {
     onMessage: (data) => {
       if (data) {
+        console.log("SSE CHECK FOR COMMENTS")
+        console.log(data)
         setComments(data)
         setIsLoading(false)
       }
@@ -68,6 +70,7 @@ export function CommentsList({ proseId }: { proseId: string }) {
       }
 
       const data = await response.json()
+      console.log(data)
       setComments(data)
     } catch (err) {
       toast({
@@ -116,7 +119,7 @@ export function CommentsList({ proseId }: { proseId: string }) {
       })
     }
   }
-
+  console.log(comments)
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -144,6 +147,7 @@ export function CommentsList({ proseId }: { proseId: string }) {
     )
   }
 
+  
   return (
     <div className="space-y-4">
       {comments.map((comment) => (

@@ -2,14 +2,13 @@ import { type NextRequest, NextResponse } from "next/server"
 
 // This is a proxy API route that forwards requests to the backend
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
-  // const path = params.path.join("/")
   const url = new URL(request.url);
   const path = url.pathname.replace("/api/", ""); 
-  const { searchParams } = new URL(request.url)
-  const token = searchParams.get("token") || request.headers.get("Authorization")?.split(" ")[1]
+  const { searchParams } = new URL(request.url);
+  const token = searchParams.get("token") || request.headers.get("Authorization")?.split(" ")[1];
 
   // Check if this is an SSE endpoint
-  const isSSE = path === "timeline" || path === "notifications" || path.includes("/comments")
+  const isSSE = path === "timeline" || path === "notifications" || path.includes("/comments");
 
   if (isSSE) {
     try {
@@ -19,45 +18,68 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
           Authorization: `Bearer ${token}`,
           Accept: "text/event-stream",
         },
-      })
+      });
 
-      if (response.ok) {
-        // Set up SSE response
-        const encoder = new TextEncoder()
-        const stream = new ReadableStream({
-          async start(controller) {
-            const data = await response.json()
+      const text = await response.text(); 
 
-            // Send the initial data
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+      if (response.ok && text.trim()) {
+        try {
+          const data = JSON.parse(text); 
 
-            // Keep the connection open
-            const interval = setInterval(() => {
-              controller.enqueue(encoder.encode(": keepalive\n\n"))
-            }, 30000)
+          // Set up SSE response
+          const encoder = new TextEncoder();
+          const stream = new ReadableStream({
+            async start(controller) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
 
-            // Clean up on close
-            request.signal.addEventListener("abort", () => {
-              clearInterval(interval)
-              controller.close()
-            })
-          },
-        })
+              // Keep the connection open
+              const interval = setInterval(() => {
+                controller.enqueue(encoder.encode(": keepalive\n\n"));
+              }, 30000);
 
-        return new NextResponse(stream, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-          },
-        })
+              // Clean up on close
+              request.signal.addEventListener("abort", () => {
+                clearInterval(interval);
+                controller.close();
+              });
+            },
+          });
+
+          return new NextResponse(stream, {
+            headers: {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache",
+              Connection: "keep-alive",
+            },
+          });
+        } catch (jsonError) {
+          console.error("SSE JSON parse error:", jsonError);
+          return NextResponse.json({ error: "Invalid JSON response from SSE" }, { status: 502 });
+        }
       } else {
-        // Fall back to regular response
-        return NextResponse.json(await response.json(), { status: response.status })
+        console.log("SSE response empty, falling back to basic fetch...");
+
+        const fallbackResponse = await fetch(`${process.env.API_URL}/api/${path}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const fallbackText = await fallbackResponse.text(); 
+
+        if (!fallbackText.trim()) {
+          return NextResponse.json({ error: "Empty response from server" }, { status: 502 });
+        }
+
+        try {
+          return NextResponse.json(JSON.parse(fallbackText), { status: fallbackResponse.status });
+        } catch {
+          return NextResponse.json({ error: "Invalid JSON from fallback" }, { status: 502 });
+        }
       }
-    } catch (error) {
-      console.error("SSE error:", error)
-      return NextResponse.json({ error: "Failed to connect to SSE" }, { status: 500 })
+    } catch (error: any) {
+      console.error("SSE error:", error);
+      if (error.code !== "UND_ERR_HEADERS_TIMEOUT") {
+        return NextResponse.json({ error: "Failed to connect to SSE" }, { status: 500 });
+      }
     }
   }
 
@@ -68,13 +90,18 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
         Authorization: token ? `Bearer ${token}` : "",
         "Content-Type": request.headers.get("Content-Type") || "application/json",
       },
-    })
+    });
 
-    const data = await response.json()
-    return NextResponse.json(data, { status: response.status })
+    const text = await response.text(); // Read response as text
+
+    if (!text.trim()) {
+      return NextResponse.json({ error: "Empty response from API" }, { status: 502 });
+    }
+
+    return NextResponse.json(JSON.parse(text), { status: response.status });
   } catch (error) {
-    console.error("API error:", error)
-    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 })
+    console.error("API error:", error);
+    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
   }
 }
 

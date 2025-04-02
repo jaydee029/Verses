@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     checkAuth()
-  }, [])
+  }, [user])
 
   const refreshToken = async () => {
     try {
@@ -213,16 +213,31 @@ function setCookie(name: string, value: string, days: number) {
   document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`
 }
 
-function getCookie(name: string) {
-  const nameEQ = name + "="
-  const ca = document.cookie.split(";")
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i]
-    while (c.charAt(0) === " ") c = c.substring(1, c.length)
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length)
+// function getCookie(name: string) {
+//   const nameEQ = name + "="
+//   const ca = document.cookie.split(";")
+//   for (let i = 0; i < ca.length; i++) {
+//     let c = ca[i]
+//     while (c.charAt(0) === " ") c = c.substring(1, c.length)
+//     if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length)
+//   }
+//   return null
+// }
+
+function getCookie(name: string): string | null {
+  const nameEQ = name + "=";
+  const cookies = document.cookie.split(";");
+
+  for (const cookie of cookies) {
+    const trimmedCookie = cookie.trim(); 
+    if (trimmedCookie.startsWith(nameEQ)) {
+      return trimmedCookie.substring(nameEQ.length);
+    }
   }
-  return null
+
+  return null;
 }
+
 
 function deleteCookie(name: string) {
   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`

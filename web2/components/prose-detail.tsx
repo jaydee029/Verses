@@ -37,6 +37,7 @@ export function ProseDetail({ prose: initialProse }: ProseDetailProps) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify("")
       })
 
       if (!response.ok) {

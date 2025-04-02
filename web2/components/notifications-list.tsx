@@ -31,7 +31,12 @@ export function NotificationsList() {
   const { data, error: sseError } = useSSE<Notification[]>("/api/notifications", token, {
     onMessage: (data) => {
       if (data) {
-        setNotifications(data)
+        console.log("SSE CHECK FOR NOTIFS")
+        console.log(data)
+        if (data!=null){
+          setNotifications(data)} else {
+            setNotifications([])
+          }
         setIsLoading(false)
       }
     },
@@ -40,7 +45,10 @@ export function NotificationsList() {
 
   useEffect(() => {
     if (data) {
-      setNotifications(data)
+      if (data!=null){
+        setNotifications(data)} else {
+          setNotifications([])
+        }
       setIsLoading(false)
     }
 
@@ -62,7 +70,10 @@ export function NotificationsList() {
       }
 
       const data = await response.json()
-      setNotifications(data)
+      if (data!=null){
+        setNotifications(data.filter((notification: Notification) => !notification.read));} else {
+        setNotifications([])
+      }
     } catch (err) {
       toast({
         title: "Error",
@@ -74,6 +85,10 @@ export function NotificationsList() {
     }
   }
 
+  const removeNotification = (notificationId: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+  };
+
   const markAllAsRead = async () => {
     try {
       const response = await fetch("/api/notifications/mark_as_read", {
@@ -81,25 +96,33 @@ export function NotificationsList() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify("")
       })
+
+      console.log(response)
 
       if (!response.ok) {
         throw new Error("Failed to mark notifications as read")
       }
 
       // Update all notifications as read
-      setNotifications(
-        notifications.map((notification) => ({
-          ...notification,
-          read: true,
-        })),
-      )
+      // if (notifications!=null){
+      //   setNotifications(
+      //     notifications.map((notification) => ({
+      //       ...notification,
+      //       read: true,
+      //     })),
+      //   )} else {
+          setNotifications([])
+        // }
+      
 
       toast({
         title: "Notifications marked as read",
         description: "All notifications have been marked as read",
       })
     } catch (err) {
+      console.log(err)
       toast({
         title: "Error",
         description: "Failed to mark notifications as read",
@@ -115,24 +138,15 @@ export function NotificationsList() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify("")
       })
-
+      console.log(response)
       if (!response.ok) {
         throw new Error("Failed to mark notification as read")
       }
 
       // Update the notification as read
-      setNotifications(
-        notifications.map((notification) => {
-          if (notification.id === notificationId) {
-            return {
-              ...notification,
-              read: true,
-            }
-          }
-          return notification
-        }),
-      )
+      removeNotification(notificationId)
     } catch (err) {
       toast({
         title: "Error",
@@ -173,7 +187,7 @@ export function NotificationsList() {
         return (
           <>
             <span className="font-semibold">{actorText}</span>
-            {" commented on your verse"}
+            {" commented on your prose"}
           </>
         )
       case "follow":
@@ -215,18 +229,21 @@ export function NotificationsList() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
+          { notifications != null? (
           <Button variant="outline" size="sm" onClick={markAllAsRead} disabled={notifications.every((n) => n.read)}>
-            Mark all as read
-          </Button>
-        </div>
-      </div>
 
-      {notifications.length === 0 ? (
+            Mark all as read
+          </Button>) : (null)} 
+        </div>
+       </div>
+
+      {notifications!= null && notifications.length === 0 ? (
         <div className="rounded-lg border bg-white dark:bg-slate-900 p-8 text-center">
           <p className="text-muted-foreground">No notifications yet.</p>
         </div>
       ) : (
         notifications.map((notification) => (
+          
           <Card
             key={notification.id}
             className={`${!notification.read ? "bg-muted/50" : "bg-white dark:bg-slate-900"}`}

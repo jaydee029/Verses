@@ -4,8 +4,8 @@ import { MainLayout } from "@/components/main-layout"
 import { ProseDetail } from "@/components/prose-detail"
 import { getProseById } from "@/lib/api"
 
-export default async function ProsePage(props: { params: Promise<{ proseId: string }> }) {
-  const params = await props.params;
+export default async function ProsePage({params,}: { params: Promise<{ proseId: string }> }) {
+  const {proseId} = await params;
   const cookieStore = await cookies()
   const token = cookieStore.get("auth_token")
 
@@ -13,7 +13,7 @@ export default async function ProsePage(props: { params: Promise<{ proseId: stri
     redirect("/login")
   }
 
-  const proseData = await getProseById(params.proseId, token.value)
+  const proseData = await getProseById(proseId, token.value)
 
   return (
     <MainLayout>
