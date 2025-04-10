@@ -8,80 +8,81 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
   const token = searchParams.get("token") || request.headers.get("Authorization")?.split(" ")[1];
 
   // Check if this is an SSE endpoint
-  const isSSE = path === "timeline" || path === "notifications" || path.includes("/comments");
+  // const isSSE = path === "timeline"  || path === "notifications" ||path.includes("/comments");
 
-  if (isSSE) {
-    try {
-      // Try SSE first
-      const response = await fetch(`${process.env.API_URL}/api/${path}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "text/event-stream",
-        },
-      });
+  // if (isSSE) {
+  //   try {
+  //     // Try SSE first
+  //     const response = await fetch(`${process.env.API_URL}/api/${path}`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         Accept: "text/event-stream",
+  //       },
+  //     });
+  //     console.log(response)
 
-      const text = await response.text(); 
+  //     const text = await response.text(); 
 
-      if (response.ok && text.trim()) {
-        try {
-          const data = JSON.parse(text); 
+  //     if (response.ok && !text.trim()) {
+  //       try {
+  //         const data = JSON.parse(text); 
 
-          // Set up SSE response
-          const encoder = new TextEncoder();
-          const stream = new ReadableStream({
-            async start(controller) {
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+  //         // Set up SSE response
+  //         const encoder = new TextEncoder();
+  //         const stream = new ReadableStream({
+  //           async start(controller) {
+  //             controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
 
-              // Keep the connection open
-              const interval = setInterval(() => {
-                controller.enqueue(encoder.encode(": keepalive\n\n"));
-              }, 30000);
+  //             // Keep the connection open
+  //             const interval = setInterval(() => {
+  //               controller.enqueue(encoder.encode(": keepalive\n\n"));
+  //             }, 30000);
 
-              // Clean up on close
-              request.signal.addEventListener("abort", () => {
-                clearInterval(interval);
-                controller.close();
-              });
-            },
-          });
+  //             // Clean up on close
+  //             request.signal.addEventListener("abort", () => {
+  //               clearInterval(interval);
+  //               controller.close();
+  //             });
+  //           },
+  //         });
 
-          return new NextResponse(stream, {
-            headers: {
-              "Content-Type": "text/event-stream",
-              "Cache-Control": "no-cache",
-              Connection: "keep-alive",
-            },
-          });
-        } catch (jsonError) {
-          console.error("SSE JSON parse error:", jsonError);
-          return NextResponse.json({ error: "Invalid JSON response from SSE" }, { status: 502 });
-        }
-      } else {
-        console.log("SSE response empty, falling back to basic fetch...");
+  //         return new NextResponse(stream, {
+  //           headers: {
+  //             "Content-Type": "text/event-stream",
+  //             "Cache-Control": "no-cache",
+  //             Connection: "keep-alive",
+  //           },
+  //         });
+  //       } catch (jsonError) {
+  //         console.error("SSE JSON parse error:", jsonError);
+  //         return NextResponse.json({ error: "Invalid JSON response from SSE" }, { status: 502 });
+  //       }
+  //     } else {
+  //       console.log("SSE response empty, falling back to basic fetch...");
 
-        const fallbackResponse = await fetch(`${process.env.API_URL}/api/${path}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  //       const fallbackResponse = await fetch(`${process.env.API_URL}/api/${path}`, {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
 
-        const fallbackText = await fallbackResponse.text(); 
+  //       const fallbackText = await fallbackResponse.text(); 
 
-        if (!fallbackText.trim()) {
-          return NextResponse.json({ error: "Empty response from server" }, { status: 502 });
-        }
+  //       if (!fallbackText.trim()) {
+  //         return NextResponse.json({ error: "Empty response from server" }, { status: 502 });
+  //       }
 
-        try {
-          return NextResponse.json(JSON.parse(fallbackText), { status: fallbackResponse.status });
-        } catch {
-          return NextResponse.json({ error: "Invalid JSON from fallback" }, { status: 502 });
-        }
-      }
-    } catch (error: any) {
-      console.error("SSE error:", error);
-      if (error.code !== "UND_ERR_HEADERS_TIMEOUT") {
-        return NextResponse.json({ error: "Failed to connect to SSE" }, { status: 500 });
-      }
-    }
-  }
+        // try {
+        //   return NextResponse.json(JSON.parse(fallbackText), { status: fallbackResponse.status });
+        // } catch {
+        //   return NextResponse.json({ error: "Invalid JSON from fallback" }, { status: 502 });
+  //       }
+  //     }
+  //   } catch (error: any) {
+  //     console.error("SSE error:", error);
+  //     if (error.code !== "UND_ERR_HEADERS_TIMEOUT") {
+  //       return NextResponse.json({ error: "Failed to connect to SSE" }, { status: 500 });
+  //     }
+  //   }
+  // }
 
   // Regular API request
   try {

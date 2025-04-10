@@ -85,6 +85,7 @@ export function UsersList() {
         );
     }
 
+    // console.log(filteredUsers)
     return (
         <div className="space-y-4">
             <h2 className="text-2xl font-serif font-bold">Find Users to Follow</h2>

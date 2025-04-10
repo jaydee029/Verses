@@ -28,7 +28,7 @@ export function NotificationsList() {
   const { toast } = useToast()
 
   // Try to use SSE for notifications, fall back to regular fetch
-  const { data, error: sseError } = useSSE<Notification[]>("/api/notifications", token, {
+  const { data, error: sseError } = useSSE<Notification[]>("/api/sse/notifications", token, "notification", {
     onMessage: (data) => {
       if (data) {
         console.log("SSE CHECK FOR NOTIFS")

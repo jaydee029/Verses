@@ -34,7 +34,7 @@ export function Timeline() {
   const { toast } = useToast();
 
   // Use SSE to get timeline updates
-  const { data, error: sseError } = useSSE<TimelineItem[]>("/api/timeline", token, {
+  const { data, error: sseError } = useSSE<TimelineItem[]>("/api/sse/timeline", token, "timeline",{
     onMessage: (data) => {
       if (data) {
         console.log("SSE CHECK FOR TL")
@@ -192,3 +192,6 @@ export function Timeline() {
     </div>
   );
 }
+
+
+

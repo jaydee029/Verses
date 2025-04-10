@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
-import { Timeline } from "@/components/timeline"
 import { MainLayout } from "@/components/main-layout"
+import TimelinePage from "./timeline/page"
 
 export default async function Home() {
   const cookieStore = await cookies()
@@ -13,7 +13,7 @@ export default async function Home() {
 
   return (
     <MainLayout>
-      <Timeline />
+      <TimelinePage />
     </MainLayout>
   )
 }

@@ -34,7 +34,7 @@ export function CommentsList({ proseId }: { proseId: string }) {
   const { toast } = useToast()
 
   // Try to use SSE for comments, fall back to regular fetch
-  const { data, error: sseError } = useSSE<Comment[]>(`/api/${proseId}/comments`, token, {
+  const { data, error: sseError } = useSSE<Comment[]>(`/api/sse/${proseId}/comments`, token, "comment", {
     onMessage: (data) => {
       if (data) {
         console.log("SSE CHECK FOR COMMENTS")

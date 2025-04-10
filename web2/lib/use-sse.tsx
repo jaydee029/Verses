@@ -4,11 +4,12 @@ import { useState, useEffect } from "react"
 
 type SSEOptions = {
   onMessage?: (data: any) => void
+  addEventListener?: (data: any) => void
   onError?: (error: any) => void
   fallbackToFetch?: boolean
 }
 
-export function useSSE<T>(url: string, token: string | null, options: SSEOptions = {}) {
+export function useSSE<T>(url: string, token: string | null, eventListener: string, options: SSEOptions = {}) {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<Error | null>(null)
   const [isConnected, setIsConnected] = useState(false)
@@ -22,27 +23,58 @@ export function useSSE<T>(url: string, token: string | null, options: SSEOptions
     const connectSSE = () => {
       try {
         // Try to use SSE
-        eventSource = new EventSource(`${url}?token=${token}&sse=true`)
+        console.log("Trying SSE")
+        console.log(url)
+        eventSource = new EventSource(`${url}?token=${token}`)
 
         eventSource.onopen = () => {
+          console.log("connected")
           setIsConnected(true)
         }
 
+        // eventSource.onmessage = (event) => {
+        //   console.log("TEST")
+        //   console.log(event.data)
+        //   if (event.data.startsWith("data:")) {
+        //     try {
+        //       const parsedData = JSON.parse(event.data.replace(/^data: /, ""));
+        //       setData(parsedData);
+        //       options.onMessage?.(parsedData);
+        //     } catch (err) {
+        //       console.error("Error parsing SSE data", err);
+        //     }
+        //   } else {
+        //     console.warn("Received non-SSE data", event.data);
+        //   }
+        // };
+
         eventSource.onmessage = (event) => {
-          if (event.data.startsWith("data:")) {
-            try {
-              const parsedData = JSON.parse(event.data.replace(/^data: /, ""));
-              setData(parsedData);
-              options.onMessage?.(parsedData);
-            } catch (err) {
-              console.error("Error parsing SSE data", err);
-            }
-          } else {
-            console.warn("Received non-SSE data", event.data);
+          console.log("DEFAULT SSE");
+          console.log(event.data);
+
+          try {
+            const parsedData = JSON.parse(event.data);
+            setData(parsedData);
+            options.onMessage?.(parsedData);
+          } catch (err) {
+            console.error("Error parsing SSE data", err);
           }
         };
 
+        // eventSource.addEventListener(eventListener, (event) => {
+        //   console.log("ADDING LISTENER ", eventListener)
+        //   try {
+        //     const parsedData = JSON.parse(event.data);
+        //     setData(parsedData);
+        //     options.onMessage?.(parsedData);
+        //   } catch (err) {
+        //     console.error("Error parsing SSE data", err);
+        //   }
+        // });
+
+
         eventSource.onerror = (err) => {
+          console.log("ERRRRRRRR: ", url)
           console.error("SSE error", err)
           setError(new Error("SSE connection failed"))
           options.onError?.(err)
@@ -81,9 +113,12 @@ export function useSSE<T>(url: string, token: string | null, options: SSEOptions
           throw new Error("Failed to fetch data")
         }
 
-        const fetchedData = await response.json()
-        setData(fetchedData)
-        options.onMessage?.(fetchedData)
+        const fetchedText = await response.text()
+        if (fetchedText.trim()) {
+          const fetchedData = JSON.parse(fetchedText);
+          setData(fetchedData)
+          options.onMessage?.(fetchedData)
+        }
       } catch (err) {
         if (err instanceof Error && err.name !== "AbortError") {
           console.error("Fallback fetch error", err)
