@@ -8,7 +8,7 @@ import { CommentsList } from "@/components/comments-list"
 import { CommentForm } from "@/components/comment-form"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 type ProseDetailProps = {
   prose: {

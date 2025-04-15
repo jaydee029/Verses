@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-hooks";
 import { ProseCard } from "@/components/prose-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,47 +35,50 @@ export function Timeline() {
 
   // Use SSE to get timeline updates
   const { data, error: sseError } = useSSE<TimelineItem>("/api/sse/timeline", token, "timeline",{
-  //   onMessage: (data) => {
-  //     if (data) {
-  //       console.log("SSE CHECK FOR TL")
-  //       console.log(data)
-  //       if (data!=null){
-  //       setTimelineItems(data);
-  //       setIsLoading(false);
-  //       }
-  //     }
-  //     console.log("SSE NO DATA FOR TL")
-  //   },
-  //   fallbackToFetch: true,
-  // });
-  onMessage: (newItem) => {
-    if (newItem) {
-      console.log("SSE received new timeline item:", newItem);
-      
-      // Add new item to the timeline without duplicates
-      setTimelineItems(prevItems => {
-        // Check if this item already exists in our timeline
-        const exists = prevItems.some(item => item.id === newItem.id);
-        if (exists) {
-          return prevItems;
+    onMessage: (ndata) => {
+      if (ndata) {
+        // console.log("SSE CHECK FOR TL")
+        // console.log(data)
+        // if (data!=null){
+        // setTimelineItems(data);
+        // setIsLoading(false);
+        if (ndata) {
+          console.log("SSE received new timeline item:", ndata);
+          
+          // Add new item to the timeline without duplicates
+          setTimelineItems(prevItems => {
+            // Check if this item already exists in our timeline
+            const exists = prevItems.some(item => item.id === ndata.id);
+            if (exists) {
+              return prevItems;
+            }
+            
+            // Add new item to the beginning of the timeline
+            return [ndata, ...prevItems];
+          });
+          
+          setIsLoading(false);
         }
-        
-        // Add new item to the beginning of the timeline
-        return [newItem, ...prevItems];
-      });
-      
-      setIsLoading(false);
+      }
+      console.log("sse data maybe")
+    console.log(data)
+      // console.log("SSE NO DATA FOR TL")
+    },
+    fallbackToFetch: true,
+    onError: (err) => {
+      console.error("SSE error:", err);
+      // Let the useEffect handle errors
     }
-  },
-  fallbackToFetch: true,
-  onError: (err) => {
-    console.error("SSE error:", err);
-    // Let the useEffect handle errors
-  }
-});
+  });
 
   // Fetch timeline if SSE fails
   useEffect(() => {
+    fetchTimelineItems();
+    
+    // Handle SSE errors by falling back to regular fetch
+    if (sseError) {
+      console.log("SSE error detected, falling back to regular fetch:", sseError);
+      fetchTimelineItems();}
     // if (data) {
     //   if (data!=null){
     //     setTimelineItems(data)} else {
@@ -83,17 +86,12 @@ export function Timeline() {
     //     }
     //   setIsLoading(false)
     // }
-    fetchTimelineItems()
-    if (sseError) {
-      console.log("SSE error detected, falling back to regular fetch:", sseError);
-      fetchTimelineItems();
-    }
+
+    // if (sseError) {
+    //   fetchTimelineItems()
+    // }
   }, [sseError]);
 
-  //   if (sseError) {
-  //     fetchTimelineItems()
-  //   }
-  // }, [data, sseError]);
 
   // Fetch timeline function
   const fetchTimelineItems = async () => {
@@ -113,7 +111,7 @@ export function Timeline() {
       }
 
       const responseData = await response.json();
-      console.log("DATA:", responseData);
+      // console.log("DATA:", responseData);
 
       if (responseData!=null){
         setTimelineItems(responseData);

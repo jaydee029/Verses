@@ -21,7 +21,13 @@ export async function GET(request: NextRequest) {
     );
 
     // Proxy the backend SSE stream directly to the client
-    return new Response(backendResponse.body, {
+    console.log(backendResponse.body)
+    let passedValue = await new Response(backendResponse.body).text();
+    if (passedValue){
+    let valueToJson = JSON.parse(passedValue);
+    console.log("jsonval:", valueToJson)
+    }
+    return new Response("", {
       status: 200,
       headers: {
         "Content-Type": "text/event-stream",
@@ -32,7 +38,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("SSE proxy error:", error);
+    console.log("SSE proxy error:", error);
     return new Response("Failed to connect to SSE", { status: 502 });
   }
 }

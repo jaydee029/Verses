@@ -29,14 +29,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${merriweather.variable} font-sans`}>
+    <html lang="en">
+      <body suppressHydrationWarning className={`${inter.variable} ${merriweather.variable} font-sans`}>
+        <ToastProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <AuthProvider>
             {children}
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
+        </ToastProvider>
       </body>
     </html>
   )
@@ -45,3 +47,4 @@ export default function RootLayout({
 
 
 import './globals.css'
+import { ToastProvider } from "@radix-ui/react-toast"

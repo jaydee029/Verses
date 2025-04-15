@@ -6,7 +6,7 @@ import { useState } from "react"
 import { useAuth } from "@/lib/auth-hooks"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
 export function CommentForm({ proseId }: { proseId: string }) {

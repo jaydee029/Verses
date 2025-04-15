@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-hooks"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { useSSE } from "@/lib/use-sse"
 import { Heart, MessageCircle, UserPlus, RefreshCw } from "lucide-react"
 

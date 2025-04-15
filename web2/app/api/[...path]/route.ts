@@ -93,13 +93,14 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
       },
     });
 
-    const text = await response.text(); // Read response as text
-
-    if (!text.trim()) {
-      return NextResponse.json({ error: "Empty response from API" }, { status: 502 });
+    const responseText = await response.text(); // Read response as text
+    // console.log("problematic text")
+    // console.log(responseText)
+    if (responseText.trim() !== "") {
+      // return NextResponse.json({ error: "Empty response from API" }, { status: 502 });
+      return NextResponse.json(JSON.parse(responseText), { status: response.status });
     }
 
-    return NextResponse.json(JSON.parse(text), { status: response.status });
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });

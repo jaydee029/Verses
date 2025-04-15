@@ -1,6 +1,6 @@
 // "use client"
 
-// import { useState, useEffect} from "react"
+// import { useState, useEffect } from "react"
 
 // type SSEOptions = {
 //   onMessage?: (data: any) => void
@@ -9,12 +9,11 @@
 //   fallbackToFetch?: boolean
 // }
 
+// export function useSSE<T>(url: string, token: string | null, eventListener: string, options: SSEOptions = {}) {
 
-// export function useSSE<T>(url: string, token: string | null, eventListener: string, options: SSEOptions= {}) {
 //   const [data, setData] = useState<T | null>(null)
 //   const [error, setError] = useState<Error | null>(null)
 //   const [isConnected, setIsConnected] = useState(false)
-
 
 //   useEffect(() => {
 //     if (!token) return
@@ -182,8 +181,7 @@ export function useSSE<T>(
       fullUrl.searchParams.append('token', token);
       
       // Create EventSource connection
-      const eventSource = new EventSource(fullUrl.toString());
-      eventSourceRef.current = eventSource;
+      const eventSource = new EventSource(fullUrl.toString(),{ withCredentials: true });
       
       // Listen for open events
       eventSource.onopen = () => {
@@ -196,6 +194,8 @@ export function useSSE<T>(
           console.log(`Received ${eventName} event:`, event);
           
           if (event.data) {
+            console.log(event.data)
+
             const parsedData = JSON.parse(event.data) as T;
             setData(parsedData);
             options.onMessage?.(parsedData);
@@ -260,9 +260,14 @@ export function useSSE<T>(
           throw new Error(`Fallback fetch failed with status: ${response.status}`);
         }
 
-        const responseData = await response.json();
-        setData(responseData as T);
-        options.onMessage?.(responseData as T);
+        const responseText = await response.text();
+        
+        if (responseText){
+          const responseData = JSON.parse(responseText)
+          setData(responseData as T);
+          options.onMessage?.(responseData as T);
+        }
+
       } catch (err) {
         console.error('Fallback fetch error:', err);
         const error = err instanceof Error ? err : new Error(String(err));
@@ -273,4 +278,3 @@ export function useSSE<T>(
   }, [url, token, eventName]);
 
   return { data, error };
-}
