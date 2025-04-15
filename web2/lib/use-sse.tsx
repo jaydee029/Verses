@@ -158,8 +158,7 @@ export function useSSE<T>(
   url: string,
   token: string | null,
   eventName: string,
-  options: SSEOptions<T> = {}
-) {
+  options: SSEOptions<T> = {} ) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -278,3 +277,4 @@ export function useSSE<T>(
   }, [url, token, eventName]);
 
   return { data, error };
+  }
