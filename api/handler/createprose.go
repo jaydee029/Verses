@@ -20,11 +20,11 @@ type Prose struct {
 	Userid      pgtype.UUID      `json:"userid,omitempty"`
 	Body        string           `json:"body"`
 	User        *User            `json:"user,omitempty"`
-	Created_at  pgtype.Timestamp `json:"created_at"`
-	Updated_at  pgtype.Timestamp `json:"Updated_at"`
+	Created_at  pgtype.Timestamp `json:"created_at,omitempty"`
+	Updated_at  pgtype.Timestamp `json:"Updated_at,omitempty"`
 	Mine        bool             `json:"mine"`
-	Liked       bool             `json:"liked"`
-	Likes_count int              `json:"likes_count"`
+	Liked       bool             `json:"liked,omitempty"`
+	Likes_count int              `json:"likes_count,omitempty"`
 	Username    string           `json:"username,omitempty"`
 	Comments    int              `json:"comments,omitempty"`
 }

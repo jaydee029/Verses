@@ -55,8 +55,9 @@ func Consume[T any](conn *amqp.Connection, exchange, queueName, key string) (<-c
 			decoder := gob.NewDecoder(buffer)
 			var data T
 			err := decoder.Decode(&data)
-			log.Println("error while decoding the message:", err)
-			log.Println(msg)
+			if err != nil {
+				log.Println("error decoding the message", err)
+			}
 			msgch <- data
 		}
 	}()
