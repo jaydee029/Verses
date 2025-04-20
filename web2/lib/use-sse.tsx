@@ -161,6 +161,7 @@ export function useSSE<T>(
   options: SSEOptions<T> = {} ) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
@@ -180,11 +181,13 @@ export function useSSE<T>(
       fullUrl.searchParams.append('token', token);
       
       // Create EventSource connection
-      const eventSource = new EventSource(fullUrl.toString(),{ withCredentials: true });
+      const eventSource = new EventSource(fullUrl.toString(), { withCredentials: true });
+      eventSourceRef.current = eventSource;
       
       // Listen for open events
       eventSource.onopen = () => {
         console.log(`SSE connection opened to ${url}`);
+        setIsConnected(true);
       };
       
       // Listen for specific event type
@@ -210,6 +213,7 @@ export function useSSE<T>(
       // Listen for general error events
       eventSource.onerror = (event) => {
         console.error('SSE connection error:', event);
+        setIsConnected(false);
         const errorMessage = 'SSE connection failed or was closed';
         setError(new Error(errorMessage));
         
@@ -261,12 +265,11 @@ export function useSSE<T>(
 
         const responseText = await response.text();
         
-        if (responseText){
-          const responseData = JSON.parse(responseText)
+        if (responseText) {
+          const responseData = JSON.parse(responseText);
           setData(responseData as T);
           options.onMessage?.(responseData as T);
         }
-
       } catch (err) {
         console.error('Fallback fetch error:', err);
         const error = err instanceof Error ? err : new Error(String(err));
@@ -276,5 +279,5 @@ export function useSSE<T>(
     }
   }, [url, token, eventName]);
 
-  return { data, error };
-  }
+  return { data, error, isConnected };
+}

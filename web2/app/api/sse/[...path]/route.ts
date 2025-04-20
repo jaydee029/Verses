@@ -20,21 +20,19 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    // Proxy the backend SSE stream directly to the client
-    console.log(backendResponse.body)
-    let passedValue = await new Response(backendResponse.body).text();
-    if (passedValue){
-    let valueToJson = JSON.parse(passedValue);
-    console.log("jsonval:", valueToJson)
-    }
-    return new Response("", {
+    // Create a TransformStream to process the response
+    const { readable, writable } = new TransformStream();
+    
+    // Start streaming the response
+    backendResponse.body?.pipeTo(writable);
+    
+    // Return the readable stream as the response
+    return new Response(readable, {
       status: 200,
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-        // Optional headers for CORS (if needed):
-        // "Access-Control-Allow-Origin": "*",
+        "Connection": "keep-alive",
       },
     });
   } catch (error) {
