@@ -26,9 +26,14 @@ func (cfg *Handler) CommentNotification(c Comment) {
 		log.Println("error while converting timestamp to pgtype:", zap.Error(err))
 		return
 	}
+	user_id, err := cfg.DB.GetUserfromProse(context.Background(), c.Proseid)
+	if err != nil {
+		cfg.logger.Info("error while fetching user id from prose during comment notifications:", zap.Error(err))
+		return
+	}
 
 	notification, err := cfg.DB.InsertCommentNotification(context.Background(), database.InsertCommentNotificationParams{
-		UserID:      c.Userid,
+		UserID:      user_id,
 		ProseID:     c.Proseid,
 		GeneratedAt: generated_at_pgtype,
 		ID:          nid_pgtype,
@@ -43,7 +48,7 @@ func (cfg *Handler) CommentNotification(c Comment) {
 
 	n.ID = nid_pgtype
 	n.Actors = notification.Actors
-	n.Userid = c.Userid
+	n.Userid = user_id
 	n.Proseid = c.Proseid
 	n.Generated_at = notification.GeneratedAt
 	n.Type = "comment"

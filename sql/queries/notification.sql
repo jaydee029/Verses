@@ -1,6 +1,7 @@
 -- name: GetNotifications :many
 SELECT id, user_id,prose_id, actors, type, read, generated_at FROM notifications WHERE user_id=$1
-AND $2::TIMESTAMP IS NULL OR generated_at < $2
+AND read=false
+AND ($2::TIMESTAMP IS NULL OR generated_at < $2)
 ORDER BY generated_at DESC
 LIMIT $3;
 

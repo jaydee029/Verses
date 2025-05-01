@@ -38,10 +38,10 @@ func writesse(w io.Writer, event string, res interface{}) {
 	v, err := json.Marshal(res)
 	if err != nil {
 		log.Printf("could not marshal response, err:%v", err)
-		fmt.Fprintf(w, "error:%v\n\n", err)
+		fmt.Fprintf(w, "error: %v\n\n", err)
 		return
 	}
 
-	fmt.Fprintf(w, "event:%s\ndata:%s\n\n", event, string(v))
+	fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event, string(v))
 
 }

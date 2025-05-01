@@ -16,12 +16,14 @@ func (cfg *Handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Conte
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
+
 	f, ok := w.(http.Flusher)
 
 	if !ok {
 		respondWithError(w, http.StatusBadRequest, "streaming unsupported")
 	}
-
+	//heartbeat := 10 * time.Second
+	//ticker := time.NewTicker(heartbeat)
 	subch, err := pubsub.Consume[timeline_item](cfg.pubsub, "timeline_direct", "timeline_queue", "timeline_item."+uuid.UUID(userid.Bytes).String())
 	if err != nil {
 		cfg.logger.Info("error consuming items:", zap.Error(err))
@@ -37,6 +39,14 @@ func (cfg *Handler) subscribeTotimeline(w http.ResponseWriter, ctx context.Conte
 			cfg.logger.Info("Received timeline item", zap.String("body", item.Post.Body))
 			writesse(w, "timeline", item)
 			f.Flush()
+		// case <-ticker.C:
+		// 	cfg.logger.Info("Sending SSE heartbeat", zap.String("routingKey", "timeline_item."+uuid.UUID(userid.Bytes).String()))
+		// 	_, err := fmt.Fprintf(w, ": heartbeat\n\n")
+		// 	if err != nil {
+		// 		cfg.logger.Error("Error writing SSE heartbeat", zap.Error(err), zap.String("routingKey", "timeline_item."+uuid.UUID(userid.Bytes).String()))
+		// 		return
+		// 	}
+		// 	f.Flush()
 		case <-ctx.Done():
 			return
 
