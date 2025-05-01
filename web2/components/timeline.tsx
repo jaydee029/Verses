@@ -73,7 +73,7 @@ export function Timeline() {
 
   // Fetch timeline if SSE fails
   useEffect(() => {
-    // fetchTimelineItems();
+    fetchTimelineItems();
     
     // Handle SSE errors by falling back to regular fetch
     if (sseError) {
@@ -138,6 +138,7 @@ export function Timeline() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: ""
       });
 
       if (!response.ok) {

@@ -47,7 +47,7 @@ export function CommentsList({ proseId }: { proseId: string }) {
   })
 
   useEffect(() => {
-    // fetchComments()
+    fetchComments()
 
     if (data) {
       setComments(data)
@@ -95,6 +95,7 @@ export function CommentsList({ proseId }: { proseId: string }) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: null
       })
 
       if (!response.ok) {
