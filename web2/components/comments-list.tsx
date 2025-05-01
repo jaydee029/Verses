@@ -47,6 +47,8 @@ export function CommentsList({ proseId }: { proseId: string }) {
   })
 
   useEffect(() => {
+    fetchComments()
+
     if (data) {
       setComments(data)
       setIsLoading(false)
@@ -55,7 +57,7 @@ export function CommentsList({ proseId }: { proseId: string }) {
     if (sseError) {
       fetchComments()
     }
-  }, [data, sseError])
+  }, [sseError])
 
   const fetchComments = async () => {
     try {
@@ -71,7 +73,10 @@ export function CommentsList({ proseId }: { proseId: string }) {
 
       const data = await response.json()
       console.log(data)
-      setComments(data)
+      if (data!=null){
+        setComments(data)
+      }
+      else setComments([])
     } catch (err) {
       toast({
         title: "Error",
@@ -90,6 +95,7 @@ export function CommentsList({ proseId }: { proseId: string }) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: null
       })
 
       if (!response.ok) {

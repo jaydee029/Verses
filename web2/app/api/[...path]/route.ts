@@ -106,26 +106,19 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
   }
 }
-
 export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
-
   const url = new URL(request.url);
-  const path = url.pathname.replace("/api/", ""); // Remove "/api/" prefix
+  const path = url.pathname.replace("/api/", "");
+  const token = request.headers.get("Authorization")?.split(" ")[1];
 
-  // if (!path) {
-  //   return new Response("Invalid request", { status: 400 });
-  // }
-  //const path = params.path.join("/")
-
-  const token = request.headers.get("Authorization")?.split(" ")[1]
-  let body = {}
+  let body = {};
   try {
-    body = request.body ? await request.json() : {};
+    const text = await request.text();
+    body = text ? JSON.parse(text) : {};
   } catch (error) {
     console.error("Invalid JSON:", error);
     return NextResponse.json({ error: "Invalid JSON input" }, { status: 400 });
   }
-
 
   try {
     const response = await fetch(`${process.env.API_URL}/api/${path}`, {
@@ -135,13 +128,20 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    })
+    });
 
-    const data = await response.json()
-    return NextResponse.json(data, { status: response.status })
+    const responseText = await response.text();
+    console.log(responseText);
+
+    if (responseText.trim() !== "") {
+      const responseData = JSON.parse(responseText);
+      return NextResponse.json(responseData, { status: response.status });
+    } else {
+      return new Response(null, { status: response.status }); // <-- return something even if empty
+    }
   } catch (error) {
-    console.error("API error:", error)
-    return NextResponse.json({ error: "Failed to post data" }, { status: 500 })
+    console.error("API error:", error);
+    return NextResponse.json({ error: "Failed to post data" }, { status: 500 });
   }
 }
 

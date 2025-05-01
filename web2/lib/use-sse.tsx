@@ -191,14 +191,16 @@ export function useSSE<T>(
       eventSource.addEventListener(eventName, (event) => {
         try {
           console.log(`Received ${eventName} event:`, event);
-          
-          if (event.data) {
-            console.log(event.data)
-
-            const parsedData = JSON.parse(event.data) as T;
-            setData(parsedData);
-            options.onMessage?.(parsedData);
+          if (event.data){
+            console.log("raw data", event.data)
           }
+          
+          // if (event.data) {
+          //   console.log(event.data)
+          //   const parsedData = JSON.parse(event.data) as T;
+          //   setData(parsedData);
+          //   options.onMessage?.(parsedData);
+          // }
         } catch (err) {
           console.error('Error parsing SSE data:', err);
           const error = err instanceof Error ? err : new Error(String(err));

@@ -138,6 +138,7 @@ export function Timeline() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: ""
       });
 
       if (!response.ok) {
