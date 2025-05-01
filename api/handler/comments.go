@@ -220,6 +220,7 @@ func (cfg *Handler) Getcomments(w http.ResponseWriter, r *http.Request) {
 
 	for _, k := range comments {
 		Comments = append(Comments, Comment{
+			Body:        k.Body,
 			Id:          k.ID,
 			Username:    k.Username,
 			Liked:       k.Liked,
