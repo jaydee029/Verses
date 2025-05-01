@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"mime"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -181,32 +180,35 @@ func (cfg *Handler) Getcomments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var before int
-	beforestr := r.URL.Query().Get("before")
+	//var before int
+	// before := sql.NullInt32{}
 
-	if beforestr != "" {
-		before, err = strconv.Atoi(beforestr)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-	}
+	// beforestr := r.URL.Query().Get("before")
 
-	limitstr := r.URL.Query().Get("limit")
-	if limitstr == "" {
-		limitstr = "10"
-	}
-	limit, err := strconv.Atoi(limitstr)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+	// if beforestr != "" {
+	// 	beforeint, err := strconv.Atoi(beforestr)
+	// 	if err != nil {
+	// 		respondWithError(w, http.StatusInternalServerError, err.Error())
+	// 		return
+	// 	}
+	// 	before = sql.NullInt32{Int32: int32(beforeint)}
+	// }
+
+	// limitstr := r.URL.Query().Get("limit")
+	// if limitstr == "" {
+	// 	limitstr = "10"
+	// }
+	// limit, err := strconv.Atoi(limitstr)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
 
 	comments, err := cfg.DB.GetComments(r.Context(), database.GetCommentsParams{
 		UserID:  pgUUID,
 		ProseID: proseid,
-		Column3: int32(before),
-		Limit:   int32(limit),
+		// ID:      before.Int32,
+		// Limit:   int32(limit),
 	})
 
 	if err != nil {

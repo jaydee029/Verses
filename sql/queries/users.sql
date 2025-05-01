@@ -42,3 +42,6 @@ ON followers.followee_id=$1 AND followers.follower_id=id
 LEFT JOIN follows as followees
 ON followees.follower_id=$1 AND followees.followee_id=id
 WHERE username =$2;
+
+-- name: GetUserfromProse :one
+SELECT author_id FROM prose WHERE id=$1;

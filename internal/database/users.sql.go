@@ -96,6 +96,17 @@ func (q *Queries) GetUserbyId(ctx context.Context, id pgtype.UUID) (User, error)
 	return i, err
 }
 
+const getUserfromProse = `-- name: GetUserfromProse :one
+SELECT author_id FROM prose WHERE id=$1
+`
+
+func (q *Queries) GetUserfromProse(ctx context.Context, id pgtype.UUID) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, getUserfromProse, id)
+	var author_id pgtype.UUID
+	err := row.Scan(&author_id)
+	return author_id, err
+}
+
 const getUsers = `-- name: GetUsers :many
 SELECT Name, username, id, followers, followees ,
 CASE WHEN followees.follower_id IS NOT NULL THEN true ELSE false END AS follower,

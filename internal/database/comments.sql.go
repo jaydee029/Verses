@@ -76,17 +76,13 @@ From comments AS c INNER JOIN users as u ON
 c.user_id=u.id
 LEFT JOIN comment_likes as Likes
 ON Likes.user_id=$1 AND Likes.comment_id=c.id
-WHERE c.prose_id=$2 AND
-$3::INT IS NULL OR c.id<$3
-ORDER BY c.id DESC 
-LIMIT $4
+WHERE c.prose_id=$2 
+ORDER BY c.id DESC
 `
 
 type GetCommentsParams struct {
 	UserID  pgtype.UUID
 	ProseID pgtype.UUID
-	Column3 int32
-	Limit   int32
 }
 
 type GetCommentsRow struct {
@@ -99,13 +95,9 @@ type GetCommentsRow struct {
 	Liked      bool
 }
 
+// $3:nullable
 func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]GetCommentsRow, error) {
-	rows, err := q.db.Query(ctx, getComments,
-		arg.UserID,
-		arg.ProseID,
-		arg.Column3,
-		arg.Limit,
-	)
+	rows, err := q.db.Query(ctx, getComments, arg.UserID, arg.ProseID)
 	if err != nil {
 		return nil, err
 	}
